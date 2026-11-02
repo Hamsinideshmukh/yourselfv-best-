@@ -1,4 +1,4 @@
-# Yourself (Best)
+# Yourselfv(Best)
 
 **Measurement-grounded facial-surgery outcome simulation: GAN inversion, latent-space editing and exact geometric
 warping, validated against real before/after surgery photos.**
