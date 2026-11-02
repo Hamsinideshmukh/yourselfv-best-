@@ -1,0 +1,170 @@
+{
+ "written": "2026-10-31, before any Stage-5 result exists; test-split analysis only after the dev analysis",
+ "status": "frozen (primary endpoint confirmed 2026-10-31)",
+ "exclusions": "medsg.dedup.EXCLUDE (25 pairs: duplicates and dev-test same-subject links)",
+ "editor": {
+  "directions": "src/medsg/assets/editor_v1.npz (Stage 4b full; synthetic + dev codes only)",
+  "loop": "secant on the measured target, k=4 averaged MediaPipe measurements, <=5 renders, stop at |achieved-request| <= 0.5 MDC; one doubled step if the first slope is <= 0"
+ },
+ "E3_controllability": {
+  "faces": "test pre-op e4e codes (included pairs only)",
+  "requests_MDC_units": {
+   "nose_width": -2,
+   "brow_height": 2,
+   "palpebral_height": 2,
+   "jaw_width": -2,
+   "mouth_width": 2
+  },
+  "mdc_synthetic": {
+   "nose_width": 0.020395483669380716,
+   "nose_length": 0.021689025452572674,
+   "palpebral_height": 0.008021321708633749,
+   "palpebral_width": 0.010464297106468796,
+   "intercanthal": 0.014255886405131306,
+   "brow_height": 0.013105730618319418,
+   "face_width": 0.03962166441747505,
+   "jaw_width": 0.032934633382724864,
+   "lower_face_height": 0.024202942395010134,
+   "mouth_width": 0.021759943235817453
+  },
+  "success_all_of": [
+   "(i) |achieved - request| <= 0.5 MDC_target (MediaPipe, averaged)",
+   "(ii) every protected metric |change| <= 1 MDC (protected = editspec, minus declared couplings)",
+   "(iii) ArcFace cos(edit, rebuild) >= tau_arc = 5th pct of ArcFace cos(real pre, real post) on dev included pairs",
+   "(iv) achieved change inside the HDA dev envelope (2.5-97.5 pct) or the literature range (flag only)"
+  ],
+  "comparisons": [
+   "closed loop vs its own iteration 0 (open loop)",
+   "closed loop vs B4 global ridge (open loop)"
+  ],
+  "stats": "success rate per target with subject-bootstrap 95% CI (10,000); paired bootstrap of differences; Holm over 5 targets x 2 comparisons",
+  "secondary": [
+   "FAN-measured achieved change (independent landmarker)",
+   "iterations",
+   "LPIPS(edit, rebuild)"
+  ]
+ },
+ "E7_deformation_priors": {
+  "pairs": "test included pairs with |real delta_t| > realistic MDC (Stage 1b) for t in nose_width, brow_height, palpebral_height, mouth_width, jaw_width, lower_face_height",
+  "priors": [
+   "B0 no change",
+   "Gaussian warp measured through MediaPipe",
+   "GAN population pattern (Stage 3 synthetic)",
+   "GAN personalised pattern (Stage 5 C3, the face's own e4e code)",
+   "HDA-empirical pattern (fit on dev)"
+  ],
+  "metrics": [
+   "affine-removed cosine between predicted and real landmark displacement (all 478 points)",
+   "landmark RMSE vs B0 (iris frame, affine removed)"
+  ],
+  "stats": "subject-bootstrap 95% CI; paired differences vs Gaussian and vs GAN population; Holm"
+ },
+ "calibration_A2": "Stage 5 C2 phantom gains (MediaPipe and FAN) reported per metric and width; MediaPipe-unit and exact-geometry results both reported",
+ "primary_endpoint": "E3 controllability success rate (closed loop), per target, test split",
+ "supporting_endpoints": {
+  "target_accuracy": "median |achieved - request| in MDC units (E3 criterion i, continuous)",
+  "specificity": "share of edits with every protected metric within 1 MDC (E3 criterion ii)",
+  "identity": "share of edits with ArcFace cos(edit, rebuild) >= tau_arc (E3 criterion iii)",
+  "deformation_realism": "E7 affine-removed cosine of predicted vs real deformation (GAN priors vs warp)",
+  "outcome_agreement": "E4 vs real post-op; expected near null, reported as such",
+  "composite": "not used (arbitrary weights)"
+ },
+ "A1_warp_mode": {
+  "written": "2026-11-01, before any A1 output exists (E3 and E7 results were known; A1 has no tuned parameters)",
+  "prior": "GAN population pattern (chosen from E7: best or tied on held-out real surgery; not contaminated by co-occurring procedures)",
+  "faces": "test included pre-op photos, FFHQ-aligned 512 px (same crop as E3)",
+  "requests_exact_geometry_mm_approx": {
+   "nose_width": -3.5,
+   "brow_height": 3.0,
+   "mrd1": 0.8,
+   "jaw_width": -8.0
+  },
+  "requests_ipd_units": {
+   "nose_width": -0.05523989898989899,
+   "brow_height": 0.04734848484848485,
+   "mrd1": 0.012626262626262628,
+   "jaw_width": -0.12626262626262627
+  },
+  "request_basis": "published mean changes: alar resection -3.3 to -4.4 mm; brow lift +2 to +4 mm; MRD1 +0.7 to +0.9 mm; mandibular angle -6 to -13 mm (RESEARCH_PLAN \u00a78b P4); approx. mm via mean IPD 63.36 mm (+-6 %)",
+  "reported": [
+   "exact achieved change (by construction = request) and exact protected-metric change (first-order zero)",
+   "MediaPipe re-measured change on the warped photo -> gain for anatomically shaped deformations",
+   "MediaPipe re-measured leakage in MDC units (E3 criterion ii)",
+   "ArcFace cos(warped, original) vs tau_arc (if the ArcFace model runs locally; else on Kaggle)",
+   "displacement recipe: per-landmark motion in approx. mm"
+  ],
+  "not_claimed": "MediaPipe-measured success is biased upward for warps (the warp moves the measured points; RESEARCH_PLAN \u00a75 B3 note)"
+ },
+ "stage7": {
+  "written": "2026-11-01, before the Stage 7 run (no Stage 7 result seen)",
+  "question": "Which inversion should feed the editor: official e4e, e4e fine-tuned on HDA dev photos (e4e_hda), or HyperStyle (official)? Plus independent (FAN, 3DDFA) judging of warp mode.",
+  "data": "HDA TEST included pre-op photos (dedup applied); fine-tuning uses DEV photos only (85% train / 15% held-out subjects for early stopping).",
+  "finetune_fixed_in_advance": {
+   "losses": "e4e published: 1.0 L2 + 0.8 LPIPS(alex) + 0.1 identity (FaceNet) + 2e-4 delta-norm",
+   "generator": "frozen",
+   "optimizer": "Adam lr 2e-5, effective batch 8, <=500 steps, eval every 50, patience 4, best val kept",
+   "no_test_tuning": true
+  },
+  "endpoints": {
+   "S7-1 identity (primary of Stage 7)": "ArcFace cos(real photo, rebuild): median and share >= tau_arc (0.558, Stage 5 dev). Paired subject bootstrap e4e_hda - e4e and hyperstyle - e4e.",
+   "S7-2 editability (must not get worse)": "E3 closed-loop success (all four criteria, judged vs each encoder's own rebuild) and success_no_id for the 5 clinical requests. Non-inferiority: lower 95% CI of (encoder - e4e) success_no_id > -0.10 per target; reported per target with Holm-adjusted p.",
+   "S7-3 identity of edits vs the real photo": "ArcFace cos(final edit, real photo) \u2014 what the patient sees.",
+   "S7-4 realism": "KID (Inception-v3 ImageNet pool features, cubic kernel, 100 subsets of 100) vs real test photos; floor = real half vs half. Not comparable to published FID/KID numbers (different Inception weights).",
+   "S7-5 speed": "seconds per photo on T4: encoder, HyperStyle, PTI 300 vs 100 steps (from e4e and e4e_hda pivots), app GAN path on synthetic faces.",
+   "S7-6 warp mode, independent judges": "FAN: measured change / true change (true = FAN points moved by the exact field) for the target; protected leakage |measured - true| in FAN MDC units. 3DDFA canonical (pose/expression removed) change in its own MDC units; direction agreement. Settles whether MediaPipe-measured leakage of warp edits is landmarker spreading.",
+   "S7-7 depth (3D) judges, added 2026-11-01 before the run": "For warp edits (K7) and every final GAN edit (K5): (a) 3DDFA-V2 canonical shape change (pose and expression removed) of the target's 3D metric in 3DDFA MDC units (noise floor from 7 re-captures, 40 faces), and its sign agreement with the request; (b) Depth Anything V2 Small dense relative depth: locality = share of depth change inside the target region / share of face area inside (1 = spread evenly, >1 = concentrated at the operated region), and depth change inside vs photometric re-capture noise. Depth is a single-photo estimate (relative, no mm); profile quantities are not reported."
+  },
+  "decision_rule": "Adopt an encoder for the GAN path if it improves S7-1 (CI excludes 0) AND passes S7-2 non-inferiority on brow, mouth, jaw (the GAN-mode targets). If both qualify, prefer higher S7-3, then speed. e4e_hda weights are HDA-derived: research results only, never published; the public app may only use official weights.",
+  "honesty": "FaceNet is no longer an independent judge for e4e_hda (training loss); ArcFace and FAN remain independent.",
+  "status": "RUN 2026-11-01/02; analysed per plan (stage7b_analysis.py): no encoder adopted as a whole (HyperStyle fails jaw non-inferiority, e4e_hda fails identity); decision 2026-11-02: HyperStyle adopted per feature for GAN-mode brow and mouth. Post-hoc composite labelled as such."
+ },
+ "stage8": {
+  "written": "2026-11-02, before the Stage 8 run (Stage 7 results known; no Stage 8 result seen)",
+  "question": "Are GAN nose and eye-opening edits too small for independent detectors, or wrong in kind? Does consensus steering (MediaPipe AND FAN must both see the request) make them anatomical, as judged by modalities neither arm steers on?",
+  "data": "HyperStyle inversions of all included TEST pre-op photos (n = 440); requests: nose -2 MDC, eye opening +2 MDC (E3 clinical); brow +2 MDC arm A as the reference of an independently confirmed edit.",
+  "arms": {
+   "A": "MediaPipe stopping (E3 editor)",
+   "B": "consensus stopping: steer on min(z_MediaPipe, z_FAN), each change divided by its own MDC95 (MediaPipe: editor asset; FAN: Stage 7 K7)",
+   "C": "eye opening only: consensus stopping with the fine-layer (8-17) direction rebuilt from Stage 4b Jacobians by Stage 4b's rule (assets/candidates_v1.npz)"
+  },
+  "primary": "S8-1 anatomically confirmed edit = 3DDFA canonical target change in the requested direction beyond the 3DDFA MDC95 (Stage 7 K7) AND ArcFace(edit, real photo) >= tau_arc 0.558 AND MediaPipe-protected leakage <= 1 MDC (E3 criterion ii, metrics). Paired subject-bootstrap differences B-A (nose, eye) and C-A (eye); Holm over the 3 comparisons.",
+  "secondary": [
+   "S8-2 further vs better: 3DDFA change per unit whitened latent step, B vs A (equal = consensus only goes further; higher = better)",
+   "S8-3 Depth Anything locality and depth change above re-capture noise (noise measured on HyperStyle rebuilds, 40 faces)",
+   "S8-4 loop status (converged / range_limit) and renders",
+   "S8-5 FAN-measured change: judge for arm A only; descriptive for B and C (steered on)",
+   "S8-6 app GAN path (HyperStyle, brow and mouth) runs on GPU: seconds, status, identity"
+  ],
+  "decision_rule": "Offer nose or eye opening in GAN mode only if the best consensus arm beats A on S8-1 (CI excludes 0) AND its S8-1 rate is at least that of the brow reference (REF, an edit already offered). Otherwise those features stay warp-mode only, and the Stage 5/7 finding is closed as 'wrong in kind' (if S8-2 shows no efficiency gain) or 'too small' (if B reaches confirmation only by going further).",
+  "status": "RUN 2026-11-02; analysed per plan (stage8b_analysis.py): decision rule -> neither nose nor eye opening offered in GAN mode. Exploratory detector-ratio table labelled as such."
+ },
+ "E4_outcome": {
+  "written": "2026-11-03, before the run (no E4 result seen)",
+  "question": "How close does a simulated post-op face come to the REAL post-op photo of the same person?",
+  "data": "included TEST pairs (splits.json test, minus dedup EXCLUDE, include_pose); pre and post photos FFHQ-aligned 512 px from their own Stage-1 landmarks; MediaPipe k=4 averaged (same pipeline as Stage 6)",
+  "targets": [
+   "nose_width",
+   "brow_medial",
+   "brow_central",
+   "brow_lateral",
+   "mrd1",
+   "jaw_width",
+   "mouth_width",
+   "lower_face_height"
+  ],
+  "targets_note": "= the app's warp-mode sliders; joint exact edit (transfer.edit_multi) with the app couplings",
+  "methods": {
+   "B0_no_change": "the pre-op photo itself",
+   "B2_typical_change": "warp the pre-op photo by the mean real change (post - pre) of the included DEV pairs, same pipeline; procedure labels are unavailable, so one pooled request for everyone. This is the prediction test.",
+   "ORACLE_own_change": "warp by the pair's OWN measured real change on the targets. Uses post-op information: NOT a prediction; shows how close the simulator gets when the size is right."
+  },
+  "endpoints": {
+   "E4-1 primary": "landmark error: mean over 478 landmarks of |sim - real post| in the iris frame (IPD units), MediaPipe on both images; paired difference B0 - method (positive = closer to the real post-op), subject bootstrap 95 % CI and p",
+   "E4-2": "per target metric |sim - real post| (IPD units), B0 - B2 paired, Holm over the 8 targets",
+   "E4-3": "ArcFace gain cos(sim, real post) - cos(pre, real post)"
+  },
+  "decision": "B2 'predicts better than no change' only if the E4-1 CI lower bound > 0. Expected near null (RESEARCH_PLAN section 1: most real changes are within noise; no procedure labels). Reported whatever the result.",
+  "failures": "edit or measurement failures are counted and reported, never replaced",
+  "status": "RUN 2026-11-03, n = 436, 0 failures. E4-1: B2 - B0 +0.0004 IPD [0.0001, 0.0007], p = 0.003 -> rule met (small). Oracle n.s. on whole-face; per feature oracle error -38 to -75 %. RESEARCH_PLAN section 8h."
+ }
+}
