@@ -1,0 +1,63 @@
+
+# Model weights (downloaded at runtime, never committed)
+*.pt
+*.pth
+*.pkl
+*.ckpt
+*.safetensors
+*.onnx
+*.task
+# dlib shape predictor
+*.dat
+# latent directions, landmark/param arrays
+*.npy
+*.npz
+
+# Dataset (HDA is research-only; never commit or upload images)
+archive.zip
+# Kaggle download bundles (may contain private face figures)
+*.zip
+flattened_images/
+*.jpg
+*.jpeg
+*.png
+*.bmp
+
+# Run outputs, downloaded models, cloned repos
+outputs/*
+models/
+repos/
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+data/
+
+# Generated Hugging Face Space bundle (rebuilt by tools/build_space.py)
+build/
+
+# Exceptions (code needs them; none contains an HDA image or per-person data):
+# frozen app assets = aggregate numbers (directions, noise floors, deformation prior, photo-check calibration)
+!src/medsg/assets/*.npz
+# synthetic example faces (StyleGAN2 samples, not real people; tools/make_examples.py)
+!app/examples/*.jpg
+
+# Chat logs (private)
+*.jsonl
+# public figures (charts + synthetic faces only; checked: no HDA image)
+!outputs/figures/
+!outputs/figures/*.png
+!outputs/figures/*.jpg
+# pre-registered test rules (public evidence; no data)
+!outputs/eval_plan.json
+!outputs/RESULTS.md
